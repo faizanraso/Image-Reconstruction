@@ -11,9 +11,9 @@ def main():
     Y, U, V = downsample(Y, U, V)
 
     # Save copies of the YUV channels
-    cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
-    cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
-    cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
+    # cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
+    # cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
+    # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
 
     # make sure the size of all components are the same
     new_height, new_width = int(Y.shape[0]*2), int(Y.shape[1])*2
@@ -69,7 +69,7 @@ def downsample(y, u, v):
 def upsample(channel, new_height, new_width, factor):
     channel_height, channel_width = channel.shape[0], channel.shape[1]
     new_channel = np.zeros((new_height, new_width))
-
+    
     for i in range(new_height):
         for j in range(new_width):
             i_value = i // factor

@@ -1,3 +1,4 @@
 env
 images/train/*
 images/valid/*
+.DS_Store
