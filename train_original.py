@@ -23,7 +23,6 @@ def get_model():
 
     model = Model([input], x)
     model.summary()
-    # model.compile(optimizer='adam', loss='mse')
     return model
 
 def get_data():
@@ -34,7 +33,8 @@ def get_data():
         img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
         y_channel = img_ycrcb[:,:, 0]
         y_out = cv2.resize(y_channel, (256, 256), interpolation=cv2.INTER_AREA)
-        y_in = cv2.resize (y_out, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        y_in = cv2.resize(y_out, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+        print(y_in.shape, y_out.shape)
         x.append(y_in)
         y.append (y_out)
     
@@ -47,6 +47,12 @@ def train():
     model = get_model()
     x, y = get_data()
     print (x.shape, y.shape)
+
+    # plt.subplot (211)
+    # plt.imshow(x[0], cmap='gray')
+    # plt.subplot(212)
+    # plt.imshow(y[0], cmap='gray')
+    # plt.show()
 
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=42)
     optimizer = keras.optimizers.Adam(learning_rate=0.0001)
@@ -76,21 +82,22 @@ def train():
 
 def run_model():
     model = load_model('model/model.h5')
-    img = cv2.imread('images/valid/0801.png')
-    img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+    img = cv2.imread('images/valid/0802.png')
+    img_ycrcb = cv2. cvtColor (img, cv2.COLOR_BGR2YCrCb)
     y_channel = img_ycrcb[:, :, 0]
-    # y_in = cv2.resize(y_channel, (256, 256), interpolation=cv2.INTER_AREA)
-    y = np.expand_dims(y_channel, axis=0)
-    y_upsampled = model.predict(y)
+    y_in = cv2.resize(y_channel, (256, 256), interpolation=cv2.INTER_AREA)
+    print(y_in.shape)
+    y = np.expand_dims (y_in, axis=0)
+
+    y_upsampled = model.predict (y)
     
     plt.subplot(211)
     plt.imshow(y[0], cmap='gray') 
     plt.subplot (212) 
     plt.imshow(y_upsampled[0], cmap='gray') 
-    plt.show()
-
-    return y_upsampled
+    plt. show()
 
 if __name__ == '__main__':
 #    train()
-   run_model()
+#    run_model()
+    get_data()

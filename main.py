@@ -6,6 +6,14 @@ import math
 def main():
     image = cv2.imread("./image.jpeg", 1)
     B, G, R = cv2.split(image)
+
+    # Make sure the image is even - this will aid in upsampling later
+    if(image.shape[0] % 2 != 0):
+        image = image[:-1, :, :]
+    if(image.shape[1] % 2 != 0):
+        image = image[:, :-1, :]
+
+
     Y, U, V = rbg_to_yuv(R, G, B)
     Y, U, V = floor_values(Y, U, V)
     Y, U, V = downsample(Y, U, V)
