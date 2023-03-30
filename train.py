@@ -68,9 +68,9 @@ def get_model():
 def get_data_y():
     x = []
     y = []
-    for img_dir in tqdm(glob('content/images/train/*.png')):
+    for img_dir in tqdm(glob('/content/train/*.png')):
         img = cv2.imread (img_dir)
-        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        img = resize_image(img, 512, 512) # resize the image to 512x512
         
         B, G, R = cv2.split(img)
         Y, U, V = rbg_to_yuv(R, G, B)
@@ -93,9 +93,9 @@ def get_data_y():
 def get_data_u():
     x = []
     y = []
-    for img_dir in tqdm(glob('content/images/train/*.png')):
+    for img_dir in tqdm(glob('/content/train/*.png')):
         img = cv2.imread (img_dir)
-        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        img = resize_image(img, 512, 512) # resize the image to 512x512
         
         B, G, R = cv2.split(img)
         Y, U, V = rbg_to_yuv(R, G, B)
@@ -118,9 +118,9 @@ def get_data_u():
 def get_data_v():
     x = []
     y = []
-    for img_dir in tqdm(glob('content/images/train/*.png')):
+    for img_dir in tqdm(glob('/content/train/*.png')):
         img = cv2.imread (img_dir)
-        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        img = resize_image(img, 512, 512) # resize the image to 512x512
         
         B, G, R = cv2.split(img)
         Y, U, V = rbg_to_yuv(R, G, B)
@@ -158,7 +158,7 @@ def train():
     model.compile(optimizer=optimizer, loss=loss)
 
     save_model_callback = keras.callbacks.ModelCheckpoint(
-        filepath='content/model/model_y.h5',
+        filepath='/content/model/model_y.h5',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -167,7 +167,7 @@ def train():
     )
 
     tb_callback = keras.callbacks.TensorBoard(
-        log_dir='content/Graph',
+        log_dir='/content/graphs/y_channel',
         histogram_freq=0,
         write_graph=True,
         write_images=True,
