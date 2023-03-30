@@ -20,14 +20,12 @@ def rbg_to_yuv(r, g, b):
 
     return y, u, v
 
-
 # Floor values to get the integer part values will be between 0 and 255
 def floor_values(y, u, v):
     Y = np.asarray(np.floor(y), dtype='int')
     U = np.asarray(np.floor(u), dtype='int')
     V = np.asarray(np.floor(v), dtype='int')
     return Y, U, V
-
 
 # Downsample the image by 2 for Y and 4 for U and V
 def downsample(y, u, v):
@@ -41,7 +39,6 @@ def resize_image(image, new_height, new_width):
     height_ratio = new_height / float(height)
     width_ratio = new_width / float(width)
 
-    # Resize the image using the scaling factors
     resized_image = np.zeros((new_height, new_width, 3), dtype=np.uint8)
     for i in range(new_height):
         for j in range(new_width):
@@ -68,12 +65,13 @@ def get_model():
     model.summary()
     return model
 
-def get_data():
+def get_data_y():
     x = []
     y = []
-    for img_dir in tqdm(glob('images/train/000*.png')):
+    for img_dir in tqdm(glob('content/images/train/*.png')):
         img = cv2.imread (img_dir)
-        img = resize_image(img, 648, 1116)
+        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        
         B, G, R = cv2.split(img)
         Y, U, V = rbg_to_yuv(R, G, B)
         Y, U, V = floor_values(Y, U, V)
@@ -84,7 +82,6 @@ def get_data():
         Y, U, V = downsample(Y, U, V)
         y_in = Y
 
-        print(y_in.shape, y_out.shape)
         x.append(y_in)
         y.append (y_out)
     
@@ -93,10 +90,61 @@ def get_data():
 
     return x, y
 
+def get_data_u():
+    x = []
+    y = []
+    for img_dir in tqdm(glob('content/images/train/*.png')):
+        img = cv2.imread (img_dir)
+        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        
+        B, G, R = cv2.split(img)
+        Y, U, V = rbg_to_yuv(R, G, B)
+        Y, U, V = floor_values(Y, U, V)
+        
+        u_channel = U[:,:]
+        u_out = u_channel
+
+        Y, U, V = downsample(Y, U, V)
+        u_in = U
+
+        x.append(u_in)
+        y.append (u_out)
+    
+    x = np.array(x)
+    y = np.array(y)
+
+    return x, y
+
+def get_data_v():
+    x = []
+    y = []
+    for img_dir in tqdm(glob('content/images/train/*.png')):
+        img = cv2.imread (img_dir)
+        img = resize_image(img, 648, 1116) # resize the image to 648x1116 - this the min width and height in the dataset
+        
+        B, G, R = cv2.split(img)
+        Y, U, V = rbg_to_yuv(R, G, B)
+        Y, U, V = floor_values(Y, U, V)
+        
+        v_channel = V[:,:]
+        v_out = v_channel
+
+        Y, U, V = downsample(Y, U, V)
+        v_in = V
+
+        x.append(v_in)
+        y.append (v_out)
+    
+    x = np.array(x)
+    y = np.array(y)
+
+    return x, y
+
 def train():
     model = get_model()
-    x, y = get_data()
-    print (x.shape, y.shape)
+    x, y = get_data_y()
+    # x, y = get_data_u()
+    # x, y = get_data_v()
 
     # plt.subplot (211)
     # plt.imshow(x[0], cmap='gray')
@@ -110,7 +158,7 @@ def train():
     model.compile(optimizer=optimizer, loss=loss)
 
     save_model_callback = keras.callbacks.ModelCheckpoint(
-        filepath='model/model.h5',
+        filepath='content/model/model_y.h5',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -119,7 +167,7 @@ def train():
     )
 
     tb_callback = keras.callbacks.TensorBoard(
-        log_dir='./Graph',
+        log_dir='content/Graph',
         histogram_freq=0,
         write_graph=True,
         write_images=True,
@@ -129,41 +177,5 @@ def train():
     epochs = 100
     model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_val, y_val), validation_split=0.1, callbacks=[save_model_callback, tb_callback])
 
-
-def load_model():
-    model = load_model('model/model.h5')
-    img = cv2.imread ('images/valid/0801.png')
-    img_ycrcb = cv2. cvtColor (img, cv2.COLOR_BGR2YCrCb)
-    y_channel = img_ycrcb[:, :, 0]
-    y_in = cv2.resize(y_channel, (256, 256), interpolatio=cv2.INTER_AREA)
-    y = np.expand_dims (y_in, axis=0)
-    
-    # apply preprocessing here
-    y = y/127.5 - 1
-    y = np.expand_dims (y, axis=3)
-
-    y_upsampled = model.predict (y)
-    print (y_upsampled.shape)
-    plt.subplot(211)
-    plt.imshow(y[0], cmap='gray') 
-    plt.subplot (212) 
-    plt.imshow(y_upsampled[0], cmap='gray') 
-    plt. show()
-
-def temp():
-    x = []
-    width = []
-    height = []
-    for img_dir in tqdm(glob('images/train/*.png')):
-        img = cv2.imread (img_dir)
-        height.append(img.shape[0])
-        width.append(img.shape[1])
-
-    print(min(height), min(width))
-
-
-
 if __name__ == '__main__':
-    # train()
-    get_data()
-    # temp()
+    train()
