@@ -12,12 +12,11 @@ def main():
     image = cv2.imread("./images/image.jpeg", 1)
     B, G, R = cv2.split(image)
 
-    # Make sure the image is even - this will aid in upsampling later
+    # Make sure the image is even - this will aid in upsampling/downsampling later
     if(image.shape[0] % 2 != 0):
         image = image[:-1, :, :]
     if(image.shape[1] % 2 != 0):
         image = image[:, :-1, :]
-
 
     Y, U, V = rbg_to_yuv(R, G, B)
     Y, U, V = floor_values(Y, U, V)
@@ -29,25 +28,24 @@ def main():
     # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
 
     Y = upsample(Y, 'model_y')
-    U = upsample(U, 'model_u') # upsample the U channel twice (factor of 2 each time)
-    V = upsample(V, 'model_v') # upsample the V channel twice (factor of 2 each time)
-
-    U = upsample(U, 'model_u') # upsample the U channel twice (factor of 2 each time)
-    V = upsample(V, 'model_v') # upsample the V channel twice (factor of 2 each time)
+    U = upsample(U, 'model_u')
+    V = upsample(V, 'model_v')
 
     Y, U, V = floor_values(Y, U, V)
     R, G, B = (yuv_to_rgb(Y, U, V))
 
     new_image = cv2.merge([B, G, R]).astype(np.uint8)
 
-    cv2.imwrite("new_image.jpeg", new_image)
-    value = calculate_psnr(image, new_image)
-    print(f"PSNR: {value} dB")
+    cv2.imwrite("img_out.jpeg", new_image)
+    PSNR = calculate_psnr(image, new_image)
+    SSIM = calculate_ssim(image, new_image)
+
+    print(f"PSNR: {PSNR} dB")
+    print(f"SSIM: {SSIM}")
 
     cv2.imshow("Image", new_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
 
 # Convert RGB to YUV
 def rbg_to_yuv(r, g, b):
@@ -61,14 +59,12 @@ def rbg_to_yuv(r, g, b):
 
     return y, u, v
 
-
 # Floor values to get the integer part values will be between 0 and 255
 def floor_values(y, u, v):
     Y = np.asarray(np.floor(y), dtype='int')
     U = np.asarray(np.floor(u), dtype='int')
     V = np.asarray(np.floor(v), dtype='int')
     return Y, U, V
-
 
 # Downsample the image by 2 for Y and 4 for U and V
 def downsample(y, u, v):
@@ -79,13 +75,12 @@ def downsample(y, u, v):
 
 # billinear upsampling
 def upsample(channel, model_name):
-    model = load_model('./model/' + model_name + '.h5')
+    model = load_model('./data/models/' + model_name + '.h5')
     channel = np.expand_dims(channel, axis=0)
     channel_upsampled = model.predict(channel)
     channel_upsampled = (np.asarray(np.floor(channel_upsampled), dtype='int'))
 
     return channel_upsampled[0]
-
 
 # convert from YUV to RGB
 def yuv_to_rgb(y, u, v):
@@ -107,6 +102,9 @@ def calculate_psnr(original_image, new_image):
         return ratio
     else:
         return math.inf
+    
+# calculate SSIM
+
 
 
 if __name__ == "__main__":
