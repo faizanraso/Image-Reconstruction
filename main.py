@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
 import math
-
+from tensorflow import keras
+from keras.layers import *
+from keras.models import *
+import cv2
+import numpy as np 
+import matplotlib.pyplot as plt
 
 def main():
-    image = cv2.imread("./image.jpeg", 1)
+    image = cv2.imread("./images/image.jpeg", 1)
     B, G, R = cv2.split(image)
 
     # Make sure the image is even - this will aid in upsampling later
@@ -23,12 +28,12 @@ def main():
     # cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
     # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
 
-    # make sure the size of all components are the same
-    new_height, new_width = int(Y.shape[0]*2), int(Y.shape[1])*2
+    Y = upsample(Y, 'model_y')
+    U = upsample(U, 'model_u') # upsample the U channel twice (factor of 2 each time)
+    V = upsample(V, 'model_v') # upsample the V channel twice (factor of 2 each time)
 
-    Y = upsample(Y, new_height, new_width, 2)
-    U = upsample(U, new_height, new_width, 4)
-    V = upsample(V, new_height, new_width, 4)
+    U = upsample(U, 'model_u') # upsample the U channel twice (factor of 2 each time)
+    V = upsample(V, 'model_v') # upsample the V channel twice (factor of 2 each time)
 
     Y, U, V = floor_values(Y, U, V)
     R, G, B = (yuv_to_rgb(Y, U, V))
@@ -72,12 +77,14 @@ def downsample(y, u, v):
     V = v[0::4, 0::4]
     return Y, U, V
 
-
 # billinear upsampling
 def upsample(channel, model_name):
-    
-    pass
+    model = load_model('./model/' + model_name + '.h5')
+    channel = np.expand_dims(channel, axis=0)
+    channel_upsampled = model.predict(channel)
+    channel_upsampled = (np.asarray(np.floor(channel_upsampled), dtype='int'))
 
+    return channel_upsampled[0]
 
 
 # convert from YUV to RGB
