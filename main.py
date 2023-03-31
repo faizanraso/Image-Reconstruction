@@ -6,14 +6,22 @@ import math
 def main():
     image = cv2.imread("./image.jpeg", 1)
     B, G, R = cv2.split(image)
+
+    # Make sure the image is even - this will aid in upsampling later
+    if(image.shape[0] % 2 != 0):
+        image = image[:-1, :, :]
+    if(image.shape[1] % 2 != 0):
+        image = image[:, :-1, :]
+
+
     Y, U, V = rbg_to_yuv(R, G, B)
     Y, U, V = floor_values(Y, U, V)
     Y, U, V = downsample(Y, U, V)
 
     # Save copies of the YUV channels
-    cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
-    cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
-    cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
+    # cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
+    # cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
+    # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
 
     # make sure the size of all components are the same
     new_height, new_width = int(Y.shape[0]*2), int(Y.shape[1])*2
@@ -66,32 +74,10 @@ def downsample(y, u, v):
 
 
 # billinear upsampling
-def upsample(channel, new_height, new_width, factor):
-    channel_height, channel_width = channel.shape[0], channel.shape[1]
-    new_channel = np.zeros((new_height, new_width))
+def upsample(channel, model_name):
+    
+    pass
 
-    for i in range(new_height):
-        for j in range(new_width):
-            i_value = i // factor
-            scale_i = (i % factor) / factor
-            j_value = j // factor
-            scale_j = (j % factor) / factor
-
-            if j_value + 1 >= channel_width:
-                j_value -= 1
-            if i_value + 1 >= channel_height:
-                i_value -= 1
-
-            a = (1-scale_i)*(1-scale_j) * channel[i_value][j_value]
-            b = (1-scale_i)*scale_j * channel[i_value][j_value+1]
-            c = scale_i*(1-scale_j) * channel[i_value+1][j_value]
-            d = scale_i*scale_j * channel[i_value+1][j_value+1]
-
-            value = a + b + c + d
-
-            new_channel[i][j] = value
-
-    return new_channel
 
 
 # convert from YUV to RGB
