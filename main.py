@@ -74,32 +74,10 @@ def downsample(y, u, v):
 
 
 # billinear upsampling
-def upsample(channel, new_height, new_width, factor):
-    channel_height, channel_width = channel.shape[0], channel.shape[1]
-    new_channel = np.zeros((new_height, new_width))
+def upsample(channel, model_name):
     
-    for i in range(new_height):
-        for j in range(new_width):
-            i_value = i // factor
-            scale_i = (i % factor) / factor
-            j_value = j // factor
-            scale_j = (j % factor) / factor
+    pass
 
-            if j_value + 1 >= channel_width:
-                j_value -= 1
-            if i_value + 1 >= channel_height:
-                i_value -= 1
-
-            a = (1-scale_i)*(1-scale_j) * channel[i_value][j_value]
-            b = (1-scale_i)*scale_j * channel[i_value][j_value+1]
-            c = scale_i*(1-scale_j) * channel[i_value+1][j_value]
-            d = scale_i*scale_j * channel[i_value+1][j_value+1]
-
-            value = a + b + c + d
-
-            new_channel[i][j] = value
-
-    return new_channel
 
 
 # convert from YUV to RGB

@@ -68,7 +68,8 @@ def get_model():
 def get_data_y():
     x = []
     y = []
-    for img_dir in tqdm(glob('/content/train/*.png')):
+    # for img_dir in tqdm(glob('/content/train/*.png')):
+    for img_dir in tqdm(glob('./images/train/000*.png')):
         img = cv2.imread (img_dir)
         img = resize_image(img, 512, 512) # resize the image to 512x512
         
@@ -93,7 +94,7 @@ def get_data_y():
 def get_data_u():
     x = []
     y = []
-    for img_dir in tqdm(glob('/content/train/*.png')):
+    for img_dir in tqdm(glob('./images/train/000*.png')):
         img = cv2.imread (img_dir)
         img = resize_image(img, 512, 512) # resize the image to 512x512
         
@@ -118,7 +119,8 @@ def get_data_u():
 def get_data_v():
     x = []
     y = []
-    for img_dir in tqdm(glob('/content/train/*.png')):
+    # for img_dir in tqdm(glob('./images/train/*.png')):
+    for img_dir in tqdm(glob('./images/train/000*.png')):
         img = cv2.imread (img_dir)
         img = resize_image(img, 512, 512) # resize the image to 512x512
         
@@ -142,8 +144,8 @@ def get_data_v():
 
 def train():
     model = get_model()
-    x, y = get_data_y()
-    # x, y = get_data_u()
+    # x, y = get_data_y()
+    x, y = get_data_u()
     # x, y = get_data_v()
 
     # plt.subplot (211)
@@ -158,7 +160,7 @@ def train():
     model.compile(optimizer=optimizer, loss=loss)
 
     save_model_callback = keras.callbacks.ModelCheckpoint(
-        filepath='/content/model/model_y.h5',
+        filepath='./content/model/model_u.h5',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -167,7 +169,7 @@ def train():
     )
 
     tb_callback = keras.callbacks.TensorBoard(
-        log_dir='/content/graphs/y_channel',
+        log_dir='./content/graphs/u_channel',
         histogram_freq=0,
         write_graph=True,
         write_images=True,
