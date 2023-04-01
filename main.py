@@ -9,7 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    image = cv2.imread("./images/input/img2.jpg", 1)
+    img_number = "5"
+    image = cv2.imread("./images/input/img" + img_number + ".jpg", 1)
     B, G, R = cv2.split(image)
 
     if(image.shape[0] % 2 != 0):
@@ -22,9 +23,9 @@ def main():
     Y, U, V = downsample(Y, U, V)
 
     # Save copies of the YUV channels
-    # cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
-    # cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
-    # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
+    cv2.imwrite("./images/yuv_images/img" + img_number + "/y_channel.jpeg", Y.astype(np.uint8))
+    cv2.imwrite("./images/yuv_images/img" + img_number + "/u_channel.jpeg", U.astype(np.uint8))
+    cv2.imwrite("./images/yuv_images/img" + img_number + "/v_channel.jpeg", V.astype(np.uint8))
 
     Y = upsample(Y, 'model_y')
     U = upsample(U, 'model_u')
@@ -35,9 +36,9 @@ def main():
 
     new_image = cv2.merge([B, G, R]).astype(np.uint8)
 
-    cv2.imwrite("./images/output/img2_out.png", new_image)
+    cv2.imwrite("./images/output/img" + img_number + "_out.png", new_image)
     PSNR = calculate_psnr(image, new_image)
-    SSIM = calculate_ssim(image, new_image)
+    SSIM = ssim(image, new_image)
 
     print(f"PSNR: {PSNR} dB")
     print(f"SSIM: {SSIM}")
@@ -98,25 +99,23 @@ def calculate_psnr(original_image, new_image):
     else:
         return math.inf
 
-# calculate SSIM - without usinbg ssim function
-def calculate_ssim(img1, img2):
+# calculate SSIM
+def ssim(img_1, img_2):
     c1 = (0.01 * 255) ** 2
     c2 = (0.03 * 255) ** 2
-    img1 = img1.astype(np.float64)
-    img2 = img2.astype(np.float64)
-    mu_x = np.mean(img1)
-    mu_y = np.mean(img2)
-    sigma_x = np.std(img1)
-    sigma_y = np.std(img2)
-    sigma_xy = np.mean((img1 - mu_x) * (img2 - mu_y))
-
-    ssim = ((2 * mu_x * mu_y + c1) * (2 * sigma_xy + c2)) / ((mu_x ** 2 + mu_y ** 2 + c1) * (sigma_x ** 2 + sigma_y ** 2 + c2))
-
-    return ssim
-
+    img_1 = img_1.astype(np.float64)
+    img_2 = img_2.astype(np.float64)
+    mu_1 = cv2.GaussianBlur(img_1, (11, 11), 1.5)
+    mu_2 = cv2.GaussianBlur(img_2, (11, 11), 1.5)
+    mu_1_sq = mu_1 ** 2
+    mu_2_sq = mu_2 ** 2
+    mu_1_mu_2 = mu_1 * mu_2
+    sigma_1_sq = cv2.GaussianBlur(img_1 * img_1, (11, 11), 1.5) - mu_1_sq
+    sigma_2_sq = cv2.GaussianBlur(img_2 * img_2, (11, 11), 1.5) - mu_2_sq
+    sigma_12 = cv2.GaussianBlur(img_1 * img_2, (11, 11), 1.5) - mu_1_mu_2
+    ssim_map = ((2 * mu_1_mu_2 + c1) * (2 * sigma_12 + c2)) / ((mu_1_sq + mu_2_sq + c1) * (sigma_1_sq + sigma_2_sq + c2))
+    return ssim_map.mean()
 
 
 if __name__ == "__main__":
     main()
-
-## https://wallpaperaccess.com/turkey-scenery
