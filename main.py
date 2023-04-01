@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    img_number = "5"
+    img_number = "1"
     image = cv2.imread("./images/input/img" + img_number + ".jpg", 1)
     B, G, R = cv2.split(image)
 
@@ -22,11 +22,6 @@ def main():
     Y, U, V = floor_values(Y, U, V)
     Y, U, V = downsample(Y, U, V)
 
-    # Save copies of the YUV channels
-    cv2.imwrite("./images/yuv_images/img" + img_number + "/y_channel.jpeg", Y.astype(np.uint8))
-    cv2.imwrite("./images/yuv_images/img" + img_number + "/u_channel.jpeg", U.astype(np.uint8))
-    cv2.imwrite("./images/yuv_images/img" + img_number + "/v_channel.jpeg", V.astype(np.uint8))
-
     Y = upsample(Y, 'model_y')
     U = upsample(U, 'model_u')
     V = upsample(V, 'model_v')
@@ -38,7 +33,7 @@ def main():
 
     cv2.imwrite("./images/output/img" + img_number + "_out.png", new_image)
     PSNR = calculate_psnr(image, new_image)
-    SSIM = ssim(image, new_image)
+    SSIM = calculate_ssim(image, new_image)
 
     print(f"PSNR: {PSNR} dB")
     print(f"SSIM: {SSIM}")
@@ -100,21 +95,22 @@ def calculate_psnr(original_image, new_image):
         return math.inf
 
 # calculate SSIM
-def ssim(img_1, img_2):
+def calculate_ssim(img_1, img_2):
     c1 = (0.01 * 255) ** 2
     c2 = (0.03 * 255) ** 2
-    img_1 = img_1.astype(np.float64)
-    img_2 = img_2.astype(np.float64)
-    mu_1 = cv2.GaussianBlur(img_1, (11, 11), 1.5)
-    mu_2 = cv2.GaussianBlur(img_2, (11, 11), 1.5)
-    mu_1_sq = mu_1 ** 2
-    mu_2_sq = mu_2 ** 2
-    mu_1_mu_2 = mu_1 * mu_2
-    sigma_1_sq = cv2.GaussianBlur(img_1 * img_1, (11, 11), 1.5) - mu_1_sq
-    sigma_2_sq = cv2.GaussianBlur(img_2 * img_2, (11, 11), 1.5) - mu_2_sq
-    sigma_12 = cv2.GaussianBlur(img_1 * img_2, (11, 11), 1.5) - mu_1_mu_2
-    ssim_map = ((2 * mu_1_mu_2 + c1) * (2 * sigma_12 + c2)) / ((mu_1_sq + mu_2_sq + c1) * (sigma_1_sq + sigma_2_sq + c2))
-    return ssim_map.mean()
+    img_1 = img_1.astype(np.double)
+    img_2 = img_2.astype(np.double)
+    kernel = (11, 11)
+    sigma = 1.5
+
+    mu_x = cv2.GaussianBlur(img_1, kernel, sigma)
+    mu_y = cv2.GaussianBlur(img_2, kernel, sigma)
+    var_x = cv2.GaussianBlur(img_1 ** 2, kernel, sigma) - (mu_x ** 2)
+    var_y = cv2.GaussianBlur(img_2 ** 2, kernel, sigma) - (mu_y ** 2)
+    covar_xy = cv2.GaussianBlur(img_1 * img_2, kernel, sigma) - (mu_x * mu_y)
+
+    ssim = ((2 * (mu_x * mu_y) + c1) * (2 * covar_xy + c2)) / (((mu_x ** 2) + (mu_y ** 2) + c1) * (var_x + var_y + c2))
+    return ssim.mean()
 
 
 if __name__ == "__main__":
