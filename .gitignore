@@ -3,3 +3,4 @@ images/train/*
 images/valid/*
 .DS_Store
 archived
+plot.py

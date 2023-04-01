@@ -9,7 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    image = cv2.imread("./images/input/img2.jpg", 1)
+    img_number = "1"
+    image = cv2.imread("./images/input/img" + img_number + ".jpg", 1)
     B, G, R = cv2.split(image)
 
     if(image.shape[0] % 2 != 0):
@@ -21,11 +22,6 @@ def main():
     Y, U, V = floor_values(Y, U, V)
     Y, U, V = downsample(Y, U, V)
 
-    # Save copies of the YUV channels
-    # cv2.imwrite("y_channel.jpeg", Y.astype(np.uint8))
-    # cv2.imwrite("u_channel.jpeg", U.astype(np.uint8))
-    # cv2.imwrite("v_channel.jpeg", V.astype(np.uint8))
-
     Y = upsample(Y, 'model_y')
     U = upsample(U, 'model_u')
     V = upsample(V, 'model_v')
@@ -35,7 +31,7 @@ def main():
 
     new_image = cv2.merge([B, G, R]).astype(np.uint8)
 
-    cv2.imwrite("./images/output/img2_out.png", new_image)
+    cv2.imwrite("./images/output/img" + img_number + "_out.png", new_image)
     PSNR = calculate_psnr(image, new_image)
     SSIM = calculate_ssim(image, new_image)
 
@@ -98,25 +94,24 @@ def calculate_psnr(original_image, new_image):
     else:
         return math.inf
 
-# calculate SSIM - without usinbg ssim function
-def calculate_ssim(img1, img2):
+# calculate SSIM
+def calculate_ssim(img_1, img_2):
     c1 = (0.01 * 255) ** 2
     c2 = (0.03 * 255) ** 2
-    img1 = img1.astype(np.float64)
-    img2 = img2.astype(np.float64)
-    mu_x = np.mean(img1)
-    mu_y = np.mean(img2)
-    sigma_x = np.std(img1)
-    sigma_y = np.std(img2)
-    sigma_xy = np.mean((img1 - mu_x) * (img2 - mu_y))
+    img_1 = img_1.astype(np.double)
+    img_2 = img_2.astype(np.double)
+    kernel = (11, 11)
+    sigma = 1.5
 
-    ssim = ((2 * mu_x * mu_y + c1) * (2 * sigma_xy + c2)) / ((mu_x ** 2 + mu_y ** 2 + c1) * (sigma_x ** 2 + sigma_y ** 2 + c2))
+    mu_x = cv2.GaussianBlur(img_1, kernel, sigma)
+    mu_y = cv2.GaussianBlur(img_2, kernel, sigma)
+    var_x = cv2.GaussianBlur(img_1 ** 2, kernel, sigma) - (mu_x ** 2)
+    var_y = cv2.GaussianBlur(img_2 ** 2, kernel, sigma) - (mu_y ** 2)
+    covar_xy = cv2.GaussianBlur(img_1 * img_2, kernel, sigma) - (mu_x * mu_y)
 
-    return ssim
-
+    ssim = ((2 * (mu_x * mu_y) + c1) * (2 * covar_xy + c2)) / (((mu_x ** 2) + (mu_y ** 2) + c1) * (var_x + var_y + c2))
+    return ssim.mean()
 
 
 if __name__ == "__main__":
     main()
-
-## https://wallpaperaccess.com/turkey-scenery
