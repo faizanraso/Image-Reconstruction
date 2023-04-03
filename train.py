@@ -56,8 +56,7 @@ def get_model():
 def get_data_y():
     x = []
     y = []
-    # for img_dir in tqdm(glob('/content/train/*.png')):
-    for img_dir in tqdm(glob('./archived/images/train/000*.png')):
+    for img_dir in tqdm(glob('/content/train/*.png')):
         img = cv2.imread (img_dir)
         img = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA) 
         
