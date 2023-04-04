@@ -56,7 +56,8 @@ def get_model():
 def get_data_y():
     x = []
     y = []
-    for img_dir in tqdm(glob('/content/train/*.png')):
+    # for img_dir in tqdm(glob('/content/train/*.png')):
+    for img_dir in tqdm(glob('archived/images/train/000*.png')):
         img = cv2.imread (img_dir)
         img = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA) 
         
@@ -126,24 +127,32 @@ def get_data_v():
 
     return x, y
 
+def PSNR(y_true, y_pred):
+    max_pixel = 255.0
+    return (10.0 * keras.backend.log((max_pixel ** 2) / (keras.backend.mean(keras.backend.square(y_pred - y_true), axis=-1)))) / 2.303
+
+def SSIM(y_true, y_pred):
+    y_true = tf.expand_dims(y_true, axis=-1)
+    y_pred = tf.expand_dims(y_pred, axis=-1)
+    return tf.reduce_mean(tf.image.ssim(y_true, y_pred, 255))
+
 def train():
     model = get_model()
-    
-    # x, y = get_data_y()
+    x, y = get_data_y()
     # x, y = get_data_u()
-    x, y = get_data_v()
+    # x, y = get_data_v()
 
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=42)
     optimizer = keras.optimizers.Adam(learning_rate=0.0001)
     loss = 'mse'
-    model.compile(optimizer=optimizer, loss=loss)
+    model.compile(optimizer=optimizer, loss=loss, metrics=[PSNR, SSIM])
 
     stop_early_callback = tf.keras.callbacks.EarlyStopping(
       monitor='val_loss',
       patience=15,
     )
     save_model_callback = keras.callbacks.ModelCheckpoint(
-        filepath='./content/model/model_v.h5',
+        filepath='./model_v.h5',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -152,7 +161,7 @@ def train():
     )
 
     tb_callback = keras.callbacks.TensorBoard(
-        log_dir='./content/graphs/v_channel',
+        log_dir='./y_psnr_sssim/',
         histogram_freq=0,
         write_graph=True,
         write_images=True,
