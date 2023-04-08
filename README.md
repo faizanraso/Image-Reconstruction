@@ -23,3 +23,6 @@ To install all required packages run the following command: <br/>
 </p>
 
 The original (left) is converted to the YUV and donwsampled (middle). The Y channel is downsampled by a factor of 2 as it contains key image data while the U and V channels are downsampled by a factor of 4. The individual channels are then upsampled, using their corresponding CNN trained models. The upsampled channels are then concatenated to form the reconstructed image (right)
+
+## License:
+This project is licensed under the MIT
