@@ -12,4 +12,12 @@ To install all required packages run the following command: <br/>
 1. Define the input image at the top of the main.py file
 2. Run ```python3 main.py```
 
-<img src="https://user-images.githubusercontent.com/59986120/230701888-9a6a535d-ade5-42ec-89c6-33525082dfac.jpg" width="300"/>
+## Demo
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/59986120/230701888-9a6a535d-ade5-42ec-89c6-33525082dfac.jpg" height="300"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://user-images.githubusercontent.com/59986120/230702056-93043735-ccfe-4fb0-a274-e26ffb9f9092.png" height="300"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://user-images.githubusercontent.com/59986120/230702104-c70b3328-70a5-4d40-af01-41fe4d648f90.png" height="300"/>
+</p>
