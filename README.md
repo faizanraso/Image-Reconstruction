@@ -4,8 +4,8 @@ This project involves a Python program that performs downsampling of images, con
 
 ## Prerequisites
 
-To install all required packages run the following command: \n
-```pip install -r requirements.txt``` \n
+To install all required packages run the following command: <br/>
+```pip install -r requirements.txt``` 
 
 ## Usage
 
